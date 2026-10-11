@@ -1,17 +1,17 @@
-import { useState } from 'react'
-import heroMap from './assets/orienteer-map-hero.svg'
+import { useEffect, useState } from 'react'
 import { news, events } from './data'
 import { Reveal } from './components/Reveal'
 import { ContactForm } from './components/ContactForm'
+import { ContourBackdrop, HeroMap, MapCover, NextStartCard } from './components/newlook'
+import { BTN_GHOST, BTN_PRIMARY } from './theme'
 import {
   AlertTriangleIcon,
   ArrowRightIcon,
   CalendarIcon,
   CompassIcon,
   FileTextIcon,
-  FlagIcon,
   ImageOffIcon,
-  MapIcon,
+  LayersIcon,
   MapPinIcon,
   MailIcon,
   MenuIcon,
@@ -42,6 +42,57 @@ function splitDate(date: string) {
   return { day: parts[0], month: parts[1] ?? '' }
 }
 
+const NAV_IDS = ['news', 'events', 'results', 'docs', 'clubs', 'contacts']
+
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState('')
+  useEffect(() => {
+    const els = ids.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => el !== null)
+    if (!els.length) return undefined
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) setActive(en.target.id)
+        })
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
+    )
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [ids])
+  return active
+}
+
+function useScrolled(threshold = 12) {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(document.documentElement.scrollTop > threshold)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [threshold])
+  return scrolled
+}
+
+/* локальная иконка часов (в новой версии — Clock) */
+function ClockLocal({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  )
+}
+
 function Logo() {
   return (
     <a
@@ -52,11 +103,11 @@ function Logo() {
       {/* компас */}
       <svg
         viewBox="0 0 48 48"
-        className="h-10 w-10 shrink-0 transition-transform duration-300 group-hover:rotate-[20deg]"
+        className="h-10 w-10 shrink-0"
         aria-hidden
       >
         {/* зелёный круг */}
-        <circle cx="24" cy="24" r="23" fill="#166534" />
+        <circle cx="24" cy="24" r="23" fill="#0B3B24" />
         <circle cx="24" cy="24" r="23" fill="none" stroke="#052E16" strokeWidth="1" opacity="0.35" />
         {/* светлый циферблат */}
         <circle cx="24" cy="24" r="17.5" fill="#FDFBF3" />
@@ -77,16 +128,18 @@ function Logo() {
             />
           )
         })}
-        {/* красно-белая стрелка */}
-        <path d="M24 24 L29.5 10.5 L24 15.5 Z" fill="#DC2626" />
-        <path d="M24 24 L18.5 37.5 L24 32.5 Z" fill="#DC2626" />
-        <path d="M24 24 L18.5 10.5 L24 15.5 Z" fill="#F8FAFC" stroke="#052E16" strokeWidth="0.5" />
-        <path d="M24 24 L29.5 37.5 L24 32.5 Z" fill="#F8FAFC" stroke="#052E16" strokeWidth="0.5" />
+        {/* красно-белая стрелка с плавным «сканированием» */}
+        <g className="tfso-sweep" style={{ transformOrigin: '24px 24px' }}>
+          <path d="M24 24 L29.4 10.6 L24 15.6 Z" fill="#DB2777" />
+          <path d="M24 24 L18.6 37.4 L24 32.4 Z" fill="#DB2777" />
+          <path d="M24 24 L18.6 10.6 L24 15.6 Z" fill="#F8FAFC" stroke="#052E16" strokeWidth="0.5" />
+          <path d="M24 24 L29.4 37.4 L24 32.4 Z" fill="#F8FAFC" stroke="#052E16" strokeWidth="0.5" />
+        </g>
         <circle cx="24" cy="24" r="2.6" fill="#052E16" />
         <circle cx="24" cy="24" r="1.1" fill="#FDFBF3" />
       </svg>
       <span className="leading-tight">
-        <span className="block text-lg font-extrabold tracking-wide text-green-950">ТФСО</span>
+        <span className="block text-[19px] font-extrabold tracking-[.14em] text-[#052E16]">ТФСО</span>
         <span className="block max-w-44 text-[11px] leading-snug text-stone-500">
           Томская федерация спортивного ориентирования
         </span>
@@ -97,132 +150,218 @@ function Logo() {
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const scrolled = useScrolled(12)
+  const active = useActiveSection(NAV_IDS)
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [menuOpen])
+
+  const linkBase =
+    'rounded-full px-3.5 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]'
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-800">
+    <div className="min-h-screen bg-[#FAF8F2] text-stone-800">
       {/* ===== Шапка ===== */}
-      <header className="sticky top-0 z-50 border-b border-stone-200/70 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+      <header
+        className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+          scrolled
+            ? 'border-stone-200/80 bg-[#FAF8F2]/85 shadow-[0_10px_30px_-18px_rgba(11,59,36,.45)] backdrop-blur-xl'
+            : 'border-transparent bg-[#FAF8F2]/60 backdrop-blur-md'
+        }`}
+      >
+        <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between gap-4 px-4">
           <Logo />
           {/* десктоп-навигация */}
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Основная навигация">
-            {navLinks.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className="rounded-full px-3 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-green-50 hover:text-green-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 active:bg-green-100"
-              >
-                {l.label}
-              </a>
-            ))}
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Основная навигация">
+            {navLinks.map((l) => {
+              const id = l.href.slice(1)
+              return (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  aria-current={active === id ? 'true' : undefined}
+                  className={`${linkBase} ${
+                    active === id
+                      ? 'bg-[#E3EFE4] text-[#0B3B24]'
+                      : 'text-stone-600 hover:bg-[#F0F4EC] hover:text-[#0B3B24] active:bg-[#E3EFE4]'
+                  }`}
+                >
+                  {l.label}
+                </a>
+              )
+            })}
           </nav>
           <div className="flex items-center gap-2">
             <a
               href="#contacts"
-              className="hidden rounded-full bg-green-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-green-700 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 sm:inline-block"
+              className="hidden rounded-full bg-[#166534] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[#0B3B24]/15 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#15803D] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534] focus-visible:ring-offset-2 sm:inline-flex"
             >
               Подать заявку
             </a>
             <button
-              className="rounded-lg p-2 text-stone-600 transition hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 lg:hidden"
+              className="rounded-xl border border-stone-200 bg-white/80 p-2.5 text-[#0B3B24] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534] lg:hidden"
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
             >
-              {menuOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+              {menuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
             </button>
           </div>
         </div>
         {/* мобильное выпадающее меню */}
         {menuOpen && (
-          <nav className="border-t border-stone-100 bg-white/95 px-4 pb-4 pt-2 shadow-lg backdrop-blur-md lg:hidden">
-            {navLinks.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setMenuOpen(false)}
-                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-green-50 hover:text-green-900"
-              >
-                {l.label}
-              </a>
-            ))}
-            <a
-              href="#contacts"
+          <>
+            <div
+              className="fixed inset-0 top-[68px] z-40 bg-[#0B3B24]/35 backdrop-blur-sm lg:hidden"
               onClick={() => setMenuOpen(false)}
-              className="mt-2 block rounded-full bg-green-800 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"
+              aria-hidden
+            />
+            <nav
+              className="tfso-drawer relative z-50 border-t border-stone-100 bg-[#FAF8F2] px-4 pb-5 pt-3 shadow-xl lg:hidden"
+              aria-label="Мобильная навигация"
             >
-              Подать заявку
-            </a>
-          </nav>
+              {navLinks.map((l, i) => {
+                const id = l.href.slice(1)
+                return (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setMenuOpen(false)}
+                    style={{ animationDelay: `${i * 30}ms` }}
+                    className={`tfso-drawer flex items-center justify-between rounded-xl px-3.5 py-3 text-[15px] font-semibold transition-colors ${
+                      active === id ? 'bg-[#E3EFE4] text-[#0B3B24]' : 'text-stone-700 hover:bg-[#F0F4EC]'
+                    }`}
+                  >
+                    {l.label}
+                    <ArrowRightIcon className="h-4 w-4 text-stone-400" />
+                  </a>
+                )
+              })}
+              <a
+                href="#contacts"
+                onClick={() => setMenuOpen(false)}
+                className="mt-3 flex items-center justify-center gap-2 rounded-full bg-[#166534] px-4 py-3 text-sm font-bold text-white shadow-md"
+              >
+                Подать заявку
+                <ArrowRightIcon className="h-4 w-4" />
+              </a>
+            </nav>
+          </>
         )}
       </header>
 
       {/* ===== Hero с картой ===== */}
-      <section className="relative overflow-hidden" id="top">
-        <img
-          src={heroMap}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+      <section className="tfso-grain relative overflow-hidden" id="top">
+        <HeroMap />
         {/* спокойный светлый градиент: слева текст читается, справа карта видна сильнее */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FAFAF9] via-[#FAFAF9]/85 to-[#FAFAF9]/20" />
-        {/* снизу фон успокаиваем — туда наезжают карточки быстрых ссылок */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#FAFAF9] via-[#FAFAF9]/60 to-transparent md:h-24" />
-        <div className="relative mx-auto max-w-6xl px-4 pb-28 pt-20 md:pb-36 md:pt-28">
-          <Reveal>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-green-700/20 bg-green-100/80 px-3 py-1 text-xs font-semibold tracking-wide text-green-800">
-              <CompassIcon className="h-3.5 w-3.5" />
-              Сезон 2026 · Томск и Томская область
-            </p>
-            <h1 className="max-w-2xl text-4xl font-extrabold leading-[1.1] tracking-tight text-green-950 md:text-6xl">
-              Спортивное ориентирование в&nbsp;Томске
-            </h1>
-            <p className="mt-5 max-w-xl text-base text-stone-600 md:text-lg">
-              Календарь соревнований, результаты, документы федерации и всё сообщество
-              томского ориентирования — в одном месте.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <a
-                href="#events"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-green-800 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-green-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
-              >
-                Ближайшие старты
-                <ArrowRightIcon className="h-4 w-4" />
-              </a>
-              <a
-                href="#docs"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white/70 px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-green-700/50 hover:bg-white hover:text-green-900 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
-              >
-                Документы и положения
-              </a>
-            </div>
-          </Reveal>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F2] via-[#FAF8F2]/93 to-[#FAF8F2]/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F2] via-[#FAF8F2]/10 to-[#FAF8F2]/70" />
+
+        <div className="relative mx-auto grid max-w-6xl gap-14 px-4 pb-44 pt-14 md:pb-52 md:pt-20 lg:grid-cols-[1.08fr_.92fr] lg:items-center lg:pb-56">
+          <div>
+            <Reveal>
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#166534]/20 bg-white/80 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[.14em] text-[#166534] backdrop-blur">
+                <CompassIcon className="h-3.5 w-3.5" />
+                Сезон 2026 · Томск и область
+              </span>
+            </Reveal>
+
+            <Reveal delay={90}>
+              <h1 className="mt-5 max-w-[16ch] text-[2.5rem] font-extrabold leading-[1.05] tracking-tight text-[#052E16] md:text-6xl">
+                Спортивное{' '}
+                <span className="relative inline-block">
+                  ориентирование
+                  <svg
+                    viewBox="0 0 320 14"
+                    className="absolute -bottom-1 left-0 h-3 w-full text-[#DB2777]"
+                    preserveAspectRatio="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M3 9C60 3 120 12 180 6s90 2 137 5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>{' '}
+                в Томске
+              </h1>
+            </Reveal>
+
+            <Reveal delay={170}>
+              <p className="mt-7 max-w-xl text-[17px] leading-relaxed text-stone-600">
+                Календарь соревнований, протоколы и результаты, документы федерации, карты районов
+                и всё сообщество томского ориентирования — в одном месте.
+              </p>
+            </Reveal>
+
+            <Reveal delay={240}>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a href="#events" className={BTN_PRIMARY}>
+                  <CalendarIcon className="h-4 w-4" />
+                  Ближайшие старты
+                </a>
+                <a href="#docs" className={BTN_GHOST}>
+                  <FileTextIcon className="h-4 w-4" />
+                  Документы и положения
+                </a>
+              </div>
+            </Reveal>
+
+            <Reveal delay={320}>
+              <dl className="mt-12 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-6 border-t border-[#0B3B24]/10 pt-7 sm:grid-cols-4">
+                {[
+                  { v: '24', l: 'клуба и секции' },
+                  { v: '38', l: 'стартов за сезон' },
+                  { v: '1 200+', l: 'участников' },
+                  { v: '27', l: 'лет федерации' },
+                ].map((st) => (
+                  <div key={st.l}>
+                    <dt className="sr-only">{st.l}</dt>
+                    <dd className="tfso-mono text-2xl font-bold leading-none text-[#0B3B24] md:text-[28px]">
+                      {st.v}
+                    </dd>
+                    <dd className="mt-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      {st.l}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
+          </div>
+
+          <NextStartCard events={events} Reveal={Reveal} />
         </div>
       </section>
 
       {/* ===== Быстрые ссылки ===== */}
-      <section className="relative z-10 mx-auto -mt-16 max-w-6xl px-4">
+      <section className="relative z-20 mx-auto -mt-28 max-w-6xl px-4 md:-mt-32">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           {[
             { t: 'Календарь', d: 'Старты сезона', href: '#events', Icon: CalendarIcon },
-            { t: 'Результаты', d: 'Протоколы', href: '#results', Icon: FlagIcon },
-            { t: 'Карты', d: 'Районы и схемы', href: '#docs', Icon: MapIcon },
+            { t: 'Результаты', d: 'Протоколы и зачёты', href: '#results', Icon: TrophyIcon },
+            { t: 'Карты', d: 'Районы и схемы', href: '#maps', Icon: LayersIcon },
             { t: 'Вступить', d: 'Заявка в федерацию', href: '#contacts', Icon: CompassIcon },
           ].map((c, i) => (
-            <Reveal key={c.t} delay={i * 80}>
+            <Reveal key={c.t} delay={i * 70} className="h-full">
               <a
                 href={c.href}
-                className="group flex h-full items-center gap-3.5 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:border-green-700/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 md:p-5"
+                className="group flex h-full items-center gap-3.5 rounded-2xl border border-stone-200/90 bg-white p-4 shadow-[0_14px_36px_-22px_rgba(11,59,36,.55)] transition-all duration-300 hover:-translate-y-1 hover:border-[#166534]/35 hover:shadow-[0_22px_44px_-22px_rgba(11,59,36,.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534] md:p-5"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-800 transition-colors group-hover:bg-green-800 group-hover:text-white">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF3EA] text-[#166534] transition-colors duration-300 group-hover:bg-[#166534] group-hover:text-white">
                   <c.Icon className="h-5 w-5" />
                 </span>
-                <span>
-                  <span className="block text-sm font-bold text-stone-800 group-hover:text-green-900">
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-extrabold text-stone-800 transition-colors group-hover:text-[#0B3B24]">
                     {c.t}
                   </span>
-                  <span className="block text-xs text-stone-500">{c.d}</span>
+                  <span className="mt-0.5 block truncate text-xs font-medium text-stone-500">{c.d}</span>
                 </span>
               </a>
             </Reveal>
@@ -282,8 +421,9 @@ export default function App() {
       </section>
 
       {/* ===== Соревнования ===== */}
-      <section id="events" className="scroll-mt-24 bg-[#052E16] py-16 text-white md:py-20">
-        <div className="mx-auto max-w-6xl px-4">
+      <section id="events" className="relative scroll-mt-24 overflow-hidden bg-[#052E16] py-16 text-white md:py-20">
+        <ContourBackdrop opacity={0.1} />
+        <div className="relative mx-auto max-w-6xl px-4">
           <Reveal>
             <div className="mb-9 flex items-end justify-between gap-4">
               <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">
@@ -330,9 +470,14 @@ export default function App() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className={`rounded-full px-3 py-1 text-xs font-bold ring-1 ${b.cls}`}>
-                        {b.label}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`rounded-full px-3 py-1 text-xs font-bold ring-1 ${b.cls}`}>
+                          {b.label}
+                        </span>
+                        {e.deadline && (
+                          <span className="text-[11px] font-semibold text-amber-300">{e.deadline}</span>
+                        )}
+                      </div>
                       <a
                         href="#docs"
                         className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-1.5 text-xs font-semibold transition hover:border-lime-300 hover:bg-lime-300/10 hover:text-lime-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"
@@ -377,17 +522,18 @@ export default function App() {
           ].map((c, i) => (
             <Reveal key={c.id} delay={i * 100} className="h-full">
               <div
-                id={c.id}
-                className="group flex h-full scroll-mt-24 flex-col rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                id={c.id === 'docs' ? 'maps' : c.id}
+                data-anchor={c.id}
+                className="group flex h-full scroll-mt-24 flex-col rounded-2xl border border-stone-200/90 bg-white p-6 shadow-[0_14px_36px_-26px_rgba(11,59,36,.5)] transition-all duration-300 hover:-translate-y-1 hover:border-[#166534]/35 hover:shadow-[0_22px_44px_-24px_rgba(11,59,36,.55)]"
               >
-                <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-green-800 transition-colors group-hover:bg-green-800 group-hover:text-white">
+                <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#EAF3EA] text-[#166534] transition-colors duration-300 group-hover:bg-[#166534] group-hover:text-white">
                   <c.Icon className="h-5 w-5" />
                 </span>
-                <h3 className="text-lg font-extrabold text-green-950">{c.title}</h3>
+                <h3 className="text-lg font-extrabold text-[#052E16]">{c.title}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-stone-600">{c.text}</p>
                 <a
                   href={`#${c.id}`}
-                  className="mt-4 inline-flex items-center gap-1.5 self-start rounded-lg text-sm font-semibold text-green-800 transition-all hover:gap-2.5 hover:text-green-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+                  className="mt-4 inline-flex items-center gap-1.5 self-start rounded-lg text-sm font-bold text-[#166534] transition-all hover:gap-2.5 hover:text-[#15803D] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]"
                 >
                   {c.link}
                   <ArrowRightIcon className="h-4 w-4" />
@@ -399,81 +545,124 @@ export default function App() {
       </section>
 
       {/* ===== Контакты ===== */}
-      <section id="contacts" className="mx-auto max-w-6xl scroll-mt-24 px-4 pb-20">
-        <Reveal>
-          <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm md:p-12">
-            <div className="grid gap-10 md:grid-cols-2">
+      <section id="contacts" className="scroll-mt-24 py-16 md:py-20">
+        <div className="mx-auto max-w-6xl px-4">
+          <Reveal>
+            <div className="grid gap-8 lg:grid-cols-[1.1fr_.9fr]">
+              {/* левая колонка — контакты */}
               <div>
-                <h2 className="text-2xl font-extrabold tracking-tight text-green-950 md:text-3xl">
+                <h2 className="text-2xl font-extrabold tracking-tight text-[#052E16] md:text-3xl">
                   Контакты федерации
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed text-stone-600">
-                  Вопросы по регистрации, пропуску на соревнования и членству в ТФСО.
+                <p className="mt-3 max-w-md text-[15px] leading-relaxed text-stone-600">
+                  Заявки на участие, вопросы по соревнованиям и сотрудничеству — пишите на почту
+                  или через форму. Отвечаем в течение рабочего дня.
                 </p>
-                <ul className="mt-7 space-y-4 text-sm">
-                  <li className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-800">
-                      <MapPinIcon className="h-4 w-4" />
-                    </span>
-                    <span className="pt-1.5 text-stone-700">г. Томск, ул. Говорихина, 16</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-800">
-                      <MailIcon className="h-4 w-4" />
-                    </span>
-                    <a
-                      href="mailto:info@tfso.tomsk.ru"
-                      className="pt-1.5 font-medium text-green-800 transition hover:text-green-600 hover:underline"
-                    >
-                      info@tfso.tomsk.ru
-                    </a>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-800">
-                      <PhoneIcon className="h-4 w-4" />
-                    </span>
-                    <a
-                      href="tel:+73822000000"
-                      className="pt-1.5 text-stone-700 transition hover:text-green-800"
-                    >
-                      +7 (3822) 00-00-00
-                    </a>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-800">
-                      <UsersIcon className="h-4 w-4" />
-                    </span>
-                    <span className="flex gap-3 pt-1.5">
-                      <a
-                        href="#"
-                        className="font-medium text-green-800 transition hover:text-green-600 hover:underline"
-                      >
-                        ВКонтакте
-                      </a>
-                      <span className="text-stone-300">·</span>
-                      <a
-                        href="#"
-                        className="font-medium text-green-800 transition hover:text-green-600 hover:underline"
-                      >
-                        Telegram
-                      </a>
-                    </span>
-                  </li>
+                <ul className="mt-7 space-y-3.5">
+                  {[
+                    { Icon: MailIcon, l: 'Эл. почта', v: 'tfso.tomsk@list.ru', href: 'mailto:tfso.tomsk@list.ru' },
+                    { Icon: PhoneIcon, l: 'Телефон', v: '+7 (351) 000-00-00', href: 'tel:+73510000000' },
+                    { Icon: MapPinIcon, l: 'Адрес', v: 'г. Томск, ул. Спортивная, 10', href: null },
+                    { Icon: ClockLocal, l: 'Часы работы', v: 'Пн–Пт 10:00–18:00', href: null },
+                  ].map((c) => {
+                    const inner = (
+                      <>
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF3EA] text-[#166534] transition-colors duration-300 group-hover:bg-[#166534] group-hover:text-white">
+                          <c.Icon className="h-5 w-5" />
+                        </span>
+                        <span>
+                          <span className="block text-[11px] font-bold uppercase tracking-wide text-stone-400">
+                            {c.l}
+                          </span>
+                          <span className="block text-sm font-bold text-stone-800">{c.v}</span>
+                        </span>
+                      </>
+                    )
+                    return (
+                      <li key={c.l}>
+                        {c.href ? (
+                          <a
+                            href={c.href}
+                            className="group flex items-center gap-3.5 rounded-2xl border border-stone-200/90 bg-white p-3.5 shadow-[0_10px_28px_-22px_rgba(11,59,36,.5)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#166534]/35 hover:shadow-[0_16px_34px_-22px_rgba(11,59,36,.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]"
+                          >
+                            {inner}
+                          </a>
+                        ) : (
+                          <div className="group flex items-center gap-3.5 rounded-2xl border border-stone-200/90 bg-white p-3.5 shadow-[0_10px_28px_-22px_rgba(11,59,36,.5)]">
+                            {inner}
+                          </div>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
-              <ContactForm />
+
+              {/* правая колонка — форма заявки */}
+              <div className="rounded-3xl border border-stone-200/90 bg-white p-6 shadow-[0_24px_60px_-30px_rgba(11,59,36,.5)] sm:p-8">
+                <h3 className="text-lg font-extrabold tracking-tight text-[#052E16]">
+                  Вступить в федерацию
+                </h3>
+                <p className="mt-1.5 text-sm text-stone-500">
+                  Заполните заявку — свяжемся с вами и подскажем ближайшую секцию.
+                </p>
+                <div className="mt-6">
+                  <ContactForm />
+                </div>
+              </div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
       </section>
 
       {/* ===== Подвал ===== */}
-      <footer className="border-t border-stone-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 px-4 py-8 md:flex-row">
-          <Logo />
-          <p className="order-first text-center text-xs leading-relaxed text-stone-500 md:order-last md:text-right">
-            © 2026 ТФСО. Общественная организация «Томская федерация спортивного ориентирования».
-          </p>
+      <footer className="border-t border-stone-200/80 bg-[#F4F1E9]">
+        <div className="mx-auto max-w-6xl px-4 py-12">
+          <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr]">
+            <div>
+              <Logo />
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone-500">
+                Региональная общественная организация «Федерация спортивного ориентирования
+                Томской области». Соревнования, карты, обучение и развитие спорта в регионе.
+              </p>
+            </div>
+            <nav aria-label="Навигация по разделам">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-stone-500">Разделы</h3>
+              <ul className="mt-3 space-y-2">
+                {navLinks.map((l) => (
+                  <li key={l.href}>
+                    <a
+                      href={l.href}
+                      className="text-sm font-medium text-stone-600 transition-colors hover:text-[#0B3B24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wide text-stone-500">Контакты</h3>
+              <ul className="mt-3 space-y-2 text-sm font-medium text-stone-600">
+                <li>
+                  <a href="mailto:tfso.tomsk@list.ru" className="transition-colors hover:text-[#0B3B24]">
+                    tfso.tomsk@list.ru
+                  </a>
+                </li>
+                <li>г. Томск, ул. Спортивная, 10</li>
+                <li>Пн–Пт 10:00–18:00</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-stone-200 pt-6 text-xs text-stone-500 sm:flex-row sm:items-center">
+            <span>© 2026 ТФСО · Все права защищены</span>
+            <a
+              href="#top"
+              className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3.5 py-1.5 font-bold text-stone-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#166534]/50 hover:text-[#0B3B24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#166534]"
+            >
+              Наверх ↑
+            </a>
+          </div>
         </div>
       </footer>
     </div>
@@ -532,42 +721,11 @@ function NewsCover({ item }: { item: (typeof news)[number] }) {
       />
     )
   }
-  // Нет фото — цветной градиент с паттерном карты (изогипсы, просеки, КП)
+  // Нет фото — декоративная SVG-карта в стиле спортивной карты
   return (
-    <div
-      role="img"
-      aria-label="Изображение отсутствует — декоративная карта"
-      className="relative h-44 w-full overflow-hidden bg-gradient-to-br from-lime-100 via-green-50 to-amber-50"
-    >
-      <svg
-        viewBox="0 0 400 176"
-        preserveAspectRatio="xMidYMid slice"
-        className="absolute inset-0 h-full w-full opacity-70"
-        aria-hidden
-      >
-        <g fill="none" stroke="#16A34A" strokeWidth="1.4" opacity="0.35">
-          <path d="M-20 40 Q80 10 160 45 T420 30" />
-          <path d="M-20 70 Q90 40 170 75 T420 60" />
-          <path d="M-20 105 Q100 75 180 110 T420 95" />
-          <path d="M-20 140 Q110 115 190 145 T420 130" />
-        </g>
-        <g stroke="#CA8A04" strokeWidth="1.2" opacity="0.4" fill="none">
-          <path d="M60 176 C75 120 55 80 90 20" strokeDasharray="6 5" />
-          <path d="M300 176 C290 130 320 90 300 30" strokeDasharray="6 5" />
-        </g>
-        <g>
-          <circle cx="150" cy="70" r="11" fill="none" stroke="#DC2626" strokeWidth="2" />
-          <text x="150" y="74" textAnchor="middle" fontSize="11" fontWeight="700" fill="#DC2626">
-            5
-          </text>
-          <circle cx="255" cy="110" r="11" fill="none" stroke="#DC2626" strokeWidth="2" />
-          <text x="255" y="114" textAnchor="middle" fontSize="11" fontWeight="700" fill="#DC2626">
-            6
-          </text>
-          <path d="M150 70 L255 110" stroke="#DC2626" strokeWidth="2" fill="none" />
-        </g>
-      </svg>
-      <ImageOffIcon className="absolute bottom-3 right-3 h-4 w-4 text-green-900/30" />
+    <div className="relative h-44 w-full overflow-hidden">
+      <MapCover variant={item.cover ?? 0} className="h-full w-full" />
+      <ImageOffIcon className="absolute bottom-3 right-3 h-4 w-4 text-stone-500/50" />
     </div>
   )
 }

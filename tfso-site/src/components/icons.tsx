@@ -20,6 +20,196 @@ function Icon({ className, children }: IconProps & { children: ReactNode }) {
   )
 }
 
+/* ── Алиасы в стиле новой версии (newlook) ── */
+export const LayersIcon = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <path d="M12 3 2 8l10 5 10-5-10-5Z" />
+    <path d="m2 16 10 5 10-5" />
+    <path d="m2 12 10 5 10-5" />
+  </svg>
+)
+export const Svg = ({ children, className = 'h-5 w-5', strokeWidth = 1.8 }: IconProps & { children: ReactNode; strokeWidth?: number }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    {children}
+  </svg>
+)
+
+export const IconCalendar = CalendarAlias
+export const IconTrophy = TrophyAlias
+export const IconMap = MapAlias
+export const IconLayers = LayersAlias
+export const IconCompass = CompassAlias
+export const IconFile = FileAlias
+export const IconUsers = UsersAlias
+export const IconPin = PinAlias
+export const IconMail = MailAlias
+export const IconPhone = PhoneAlias
+export const IconArrow = ArrowAlias
+export const IconClock = ClockAlias
+export const IconAlert = AlertAlias
+export const IconX = XAlias
+export const IconMenu = MenuAlias
+export const IconUp = UpAlias
+export const IconCheck = CheckAlias
+export const IconSend = SendAlias
+export const IconFlag = FlagAlias
+
+function CalendarAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3" y="4.6" width="18" height="16.4" rx="2.6" />
+      <path d="M3 9.6h18M8 2.8v3.4M16 2.8v3.4" />
+    </Svg>
+  )
+}
+function TrophyAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
+      <path d="M7 5.5H4.5V7a3.5 3.5 0 0 0 3 3.46M17 5.5h2.5V7a3.5 3.5 0 0 1-3 3.46" />
+      <path d="M12 14v3.5M8.5 20.5h7M10 17.5h4l.7 3H9.3l.7-3Z" />
+    </Svg>
+  )
+}
+function MapAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M9 3.5 3.6 5.7A1 1 0 0 0 3 6.63v12.2a1 1 0 0 0 1.36.93L9 18l6 2.5 5.4-2.2a1 1 0 0 0 .6-.93V5.17a1 1 0 0 0-1.36-.93L15 6 9 3.5Z" />
+      <path d="M9 3.5v14.6M15 6v14.5" />
+    </Svg>
+  )
+}
+function LayersAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3.5 12.5 8.5 4.7 8.5-4.7M3.5 16.8l8.5 4.7 8.5-4.7" />
+    </Svg>
+  )
+}
+function CompassAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9.2" />
+      <path d="m15.6 8.4-2 5.2-5.2 2 2-5.2 5.2-2Z" />
+    </Svg>
+  )
+}
+function FileAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M14 2.8H7a2 2 0 0 0-2 2v14.4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7.8l-5-5Z" />
+      <path d="M14 2.8v5h5M9 13h6M9 16.6h4" />
+    </Svg>
+  )
+}
+function UsersAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M16 20v-1.6a4 4 0 0 0-4-4H6.5a4 4 0 0 0-4 4V20" />
+      <circle cx="9.2" cy="7.4" r="3.4" />
+      <path d="M21.5 20v-1.6a4 4 0 0 0-3-3.86M15.6 4.2a3.4 3.4 0 0 1 0 6.4" />
+    </Svg>
+  )
+}
+function PinAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M20 10.4c0 5.4-8 11.6-8 11.6s-8-6.2-8-11.6a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10.2" r="2.9" />
+    </Svg>
+  )
+}
+function MailAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="2.6" y="4.8" width="18.8" height="14.4" rx="2.4" />
+      <path d="m3.4 7 7.5 5.4a2 2 0 0 0 2.2 0L20.6 7" />
+    </Svg>
+  )
+}
+function PhoneAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M21.4 16.9v2.6a1.8 1.8 0 0 1-2 1.8 17.8 17.8 0 0 1-7.8-2.8 17.5 17.5 0 0 1-5.4-5.4A17.8 17.8 0 0 1 3.4 5.2a1.8 1.8 0 0 1 1.8-2h2.6a1.8 1.8 0 0 1 1.8 1.55c.12.9.34 1.79.66 2.63a1.8 1.8 0 0 1-.4 1.9L8.7 10.5a14.4 14.4 0 0 0 5.4 5.4l1.15-1.16a1.8 1.8 0 0 1 1.9-.4c.85.32 1.73.54 2.64.66a1.8 1.8 0 0 1 1.55 1.8Z" />
+    </Svg>
+  )
+}
+function ArrowAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M4.5 12h15M13.2 5.7 19.5 12l-6.3 6.3" />
+    </Svg>
+  )
+}
+function ClockAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9.2" />
+      <path d="M12 6.8V12l3.4 2" />
+    </Svg>
+  )
+}
+function AlertAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M10.3 3.6 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z" />
+      <path d="M12 9.2v4.4M12 17.2h.01" />
+    </Svg>
+  )
+}
+function XAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M6 6l12 12M18 6 6 18" />
+    </Svg>
+  )
+}
+function MenuAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M3.5 7h17M3.5 12h17M3.5 17h17" />
+    </Svg>
+  )
+}
+function UpAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 19.5V5M5.7 11.3 12 5l6.3 6.3" />
+    </Svg>
+  )
+}
+function CheckAlias(p: IconProps) {
+  return (
+    <Svg {...p} strokeWidth={2.4}>
+      <path d="m4.5 12.5 5 5 10-11" />
+    </Svg>
+  )
+}
+function SendAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M21.3 3.4 10.8 13.9M21.3 3.4l-6.9 18-3.6-7.5-7.5-3.6 18-6.9Z" />
+    </Svg>
+  )
+}
+function FlagAlias(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M5 21.5V4M5 4.8h11.5l-2 3.6 2 3.6H5" />
+    </Svg>
+  )
+}
+
 export const CalendarIcon = ({ className }: IconProps) => (
   <Icon className={className}>
     <rect x="3" y="4" width="18" height="18" rx="2" />
