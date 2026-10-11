@@ -1,0 +1,149 @@
+// Векторные иконки (стиль lucide): stroke="currentColor", 24x24, strokeWidth 2
+import type { ReactNode } from 'react'
+
+type IconProps = { className?: string }
+
+function Icon({ className, children }: IconProps & { children: ReactNode }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      {children}
+    </svg>
+  )
+}
+
+export const CalendarIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </Icon>
+)
+
+export const FlagIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+    <line x1="4" y1="22" x2="4" y2="15" />
+  </Icon>
+)
+
+export const MapIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
+    <path d="M15 5.754v15M9 3.246v15" />
+  </Icon>
+)
+
+export const CompassIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <circle cx="12" cy="12" r="10" />
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+  </Icon>
+)
+
+export const AlertTriangleIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <path d="M12 9v4M12 17h.01" />
+  </Icon>
+)
+
+export const XIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M18 6 6 18M6 6l12 12" />
+  </Icon>
+)
+
+export const MenuIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M4 6h16M4 12h16M4 18h16" />
+  </Icon>
+)
+
+export const ArrowRightIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M5 12h14M12 5l7 7-7 7" />
+  </Icon>
+)
+
+export const FileTextIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+    <path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8M10 9H8" />
+  </Icon>
+)
+
+export const UsersIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+  </Icon>
+)
+
+export const TrophyIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+    <path d="M4 22h16" />
+    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+  </Icon>
+)
+
+export const MapPinIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+    <circle cx="12" cy="10" r="3" />
+  </Icon>
+)
+
+export const MailIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </Icon>
+)
+
+export const PhoneIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </Icon>
+)
+
+export const SendIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M14.536 21.686a.5.5 0 0 0 .653-.653l-6.5-12a.5.5 0 0 0-.892.027L6.35 15.65l-5.007 1.88a.5.5 0 0 0 .027.892z" />
+    <path d="m18 2 4 4-9.4 1.6" />
+  </Icon>
+)
+
+export const CheckCircleIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+    <path d="m9 11 3 3L22 4" />
+  </Icon>
+)
+
+export const LoaderIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M12 2v4.8M12 17.2V22M4.93 4.93l3.4 3.4M15.68 15.68l3.4 3.4M2 12h4.8M17.2 12H22M4.93 19.07l3.4-3.4M15.68 8.32l3.4-3.4" />
+  </Icon>
+)
+
+export const ImageOffIcon = ({ className }: IconProps) => (
+  <Icon className={className}>
+    <path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11.3" />
+    <path d="M21 15v3a3 3 0 0 1-.5 1.5l-8.37-8.37" />
+    <path d="m21 21-6-6" />
+    <circle cx="9" cy="9" r="2" />
+  </Icon>
+)
